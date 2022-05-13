@@ -4,13 +4,18 @@
 #include <stdio.h>
 
 
-// custom bool
-// __attribute__((__packed__)) to reduce size of stored values
+/* custom bool
+ __attribute__((__packed__)) to reduce size of stored values
 typedef __attribute__((__packed__))
 enum {
 	false=0,
 	true=!false
 } bool_c;
+*/
+
+struct LRUCache{
+	// implement logic later
+};
 
 struct node{
 	struct node* _prev;
@@ -45,12 +50,12 @@ struct DeQueue* initDeQueue(unsigned long numOfFrames){
 	return(queue);
 }
 
-struct Hast* initHash(unsigned long _capacity){
+struct Hash* initHash(unsigned long _capacity){
 	// need implementation
 	int i;
 	struct Hash* hash = (struct Hash*)malloc(sizeof(struct Hash));
-	hash->_capacity = capacity;
-	hash->arrOfNodes = (struct node**)malloc(hash->_capacity*sizeof(struct node*));
+	hash->_capacity = _capacity;
+	hash->_arrOfNodes = (struct node**)malloc(hash->_capacity*sizeof(struct node*));
 	for(i = 0;i<hash->_capacity;++i){
 		hash->_arrOfNodes[i] = NULL;
 	}
@@ -67,7 +72,7 @@ int isDeQueueEmpty(struct DeQueue* queue){
 
 void pop_back(struct DeQueue* queue)
 {
-	if(isQueueEmpty(queue)){
+	if(isDeQueueEmpty(queue)){
 		// error
 		return;
 	}
@@ -79,8 +84,8 @@ void pop_back(struct DeQueue* queue)
 	}
 	struct node* iterator = queue->_tail;
 	queue->_tail = queue->_tail->_prev;
-	if(queue->tail) queue->_tail->_next = NULL;
-	free(temp);
+	if(queue->_tail) queue->_tail->_next = NULL;
+	free(iterator);
 	queue->_count--;
 	// need to finish
 }
@@ -106,5 +111,40 @@ void pushToQH(struct DeQueue* queue, struct Hash* hash, unsigned long pageNumber
 }
 
 
+void refer(struct DeQueue* queue, struct Hash* hash, unsigned long pageNumber)
+{
+	struct node* refPage = hash->_arrOfNodes[pageNumber];
+	if(refPage==NULL) pushToQH(queue,hash,pageNumber);
+	else if(refPage!=queue->_front){
+		refPage->_prev->_next = refPage->_next;
+		if(refPage->_next){
+			refPage->_next->_prev= refPage->_prev;
+		}
+		if(refPage == queue->_tail){
+			queue->_tail = refPage->_prev;
+			queue->_tail->_next=NULL;
+		}
+		refPage->_next = queue->_front;
+		refPage->_prev = NULL;
+		refPage->_next->_prev = refPage;
+		queue->_front = refPage;
+	}
+}
+
+
+void printDeq(struct DeQueue* queue){
+	if(isDeQueueEmpty(queue)==1){
+		printf("\nThe Dequeue is empty...\n");
+		return;
+	}
+	struct node* iterator = queue->_front;
+	printf("\n\n----------------------\n\n");
+	while(iterator!=NULL){
+		printf("%lu ",iterator->_pageNum);
+		iterator=iterator->_next;
+	}
+		printf("\n\n----------------------\n\n");
+
+}
 
 #endif
